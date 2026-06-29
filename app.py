@@ -5,25 +5,32 @@ from gtts import gTTS
 from moviepy import VideoFileClip, AudioFileClip
 from transformers import pipeline
 
-st.set_page_config(page_title="AI Movie Explainer", page_icon="🎬", layout="centered")
+# 🔥 SABSE MAIN CHANGE: Yahan hamne 500 MB tak ki video file upload karne ki limit code me hi set kar di hai!
+st.set_page_config(
+    page_title="AI Movie Explainer", 
+    page_icon="🎬", 
+    layout="centered"
+)
+
+# Configuration ke zariye server ko bataya ki 500MB allow kare
+st.config.set_option("server.maxUploadSize", 500)
 
 st.title("🎬 AI Movie Explainer 90-Sec Pro")
-st.write("6 Minute tak ki video se automatic 90-second ka horizontal/vertical viral short banayein!")
+st.write("Ab aap 500 MB tak ki badi video clip se automatic 90-second ka viral short banayein!")
 
-# Functions
+# Models Loader
 @st.cache_resource
 def load_models():
-    # Model ko cache me rakh rahe hain taaki baar-baar load na ho
     whisper_model = whisper.load_model("tiny", device="cpu")
     script_pipe = pipeline("text-generation", model="Qwen/Qwen1.5-0.5B-Chat", device="cpu")
     return whisper_model, script_pipe
 
 whisper_model, script_pipe = load_models()
 
+# Video Uploader (Ab ye 500MB tak jhelega)
 uploaded_file = st.file_uploader("SABSE PEHLE MOVIE CLIP UPLOAD KAREIN 👇", type=["mp4", "mov", "avi"])
 
 if uploaded_file is not None:
-    # Temporary file save karna processing ke liye
     with open("input_video.mp4", "wb") as f:
         f.write(uploaded_file.read())
     
@@ -42,7 +49,7 @@ if uploaded_file is not None:
                 
                 # Step 2: Script Generation
                 status.write("🤖 AI ab viral Hindi script taiyar kar raha hai...")
-                prompt = f"<|im_start|>system\nAap ek Reels creator hain. Niche di gayi movie transcript se ek lamba, suspenseful aur viral Hindi voiceover script likhein jo lagbhag 80 se 90 seconds tak chale.<|im_end|>\n<|im_start|>user\nTranscript: {transcript}<|im_end|>\n<|im_start|>assistant\n"
+                prompt = f"<|im_start|>system\nAap ek Facebook Reels aur YouTube Shorts creator hain. Niche di gayi movie transcript se ek lamba, suspenseful aur viral Hindi voiceover script likhein jo lagbhag 80 se 90 seconds tak chale.<|im_end|>\n<|im_start|>user\nTranscript: {transcript}<|im_end|>\n<|im_start|>assistant\n"
                 outputs = script_pipe(prompt, max_new_tokens=300, do_sample=True, temperature=0.7)
                 hindi_script = outputs[0]["generated_text"].split("<|im_start|>assistant\n")[-1]
                 
@@ -61,7 +68,7 @@ if uploaded_file is not None:
                 target_w = int(h * 9 / 16)
                 x_center = w / 2
                 
-                # Crop + Zoom + Mirror (Anti-Copyright)
+                # Crop + Zoom 5% + Mirror (Anti-Copyright)
                 crop_clip = short_clip.crop(x_center=x_center, width=target_w, height=h)
                 final_clip = crop_clip.fx(lambda c: c.resize(1.05)).fx(lambda c: c.mirrorx())
                 final_clip = final_clip.set_audio(audio_clip.set_duration(duration))
@@ -71,9 +78,10 @@ if uploaded_file is not None:
                 
                 status.update(label="🎯 Video Taiyar Hai!", state="complete", expanded=False)
                 
-                # Show Output
-                st.success("🎉 Aapka Video Successfuy Ban Gaya!")
+                # Output Show Karein
+                st.success("🎉 Aapka Video Successfully Ban Gaya!")
                 st.video(output_path)
                 
             except Exception as e:
                 status.update(label=f"❌ Error Aaya: {e}", state="error")
+
