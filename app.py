@@ -5,15 +5,12 @@ from gtts import gTTS
 from moviepy import VideoFileClip, AudioFileClip
 from transformers import pipeline
 
-# 🔥 SABSE MAIN CHANGE: Yahan hamne 500 MB tak ki video file upload karne ki limit code me hi set kar di hai!
+# Safe initialization
 st.set_page_config(
     page_title="AI Movie Explainer", 
     page_icon="🎬", 
     layout="centered"
 )
-
-# Configuration ke zariye server ko bataya ki 500MB allow kare
-st.config.set_option("server.maxUploadSize", 500)
 
 st.title("🎬 AI Movie Explainer 90-Sec Pro")
 st.write("Ab aap 500 MB tak ki badi video clip se automatic 90-second ka viral short banayein!")
@@ -27,7 +24,7 @@ def load_models():
 
 whisper_model, script_pipe = load_models()
 
-# Video Uploader (Ab ye 500MB tak jhelega)
+# Video Uploader
 uploaded_file = st.file_uploader("SABSE PEHLE MOVIE CLIP UPLOAD KAREIN 👇", type=["mp4", "mov", "avi"])
 
 if uploaded_file is not None:
@@ -84,4 +81,5 @@ if uploaded_file is not None:
                 
             except Exception as e:
                 status.update(label=f"❌ Error Aaya: {e}", state="error")
+
 
